@@ -15,7 +15,7 @@ Usage"
 
 
 Version 2:
-This version parse a config file to read input parameters and creates a template out of it. The config used here is json format and similar formats like yaml/INI can be used.
+This version parses a config file to read input parameters and creates a template out of it. The config used here is json format and similar formats like yaml/INI can be used.
 This script is more sophisticated since the arguments passsing is easier and maintainable in a file to keep track.
 Usage:
 ./troposphere.py
