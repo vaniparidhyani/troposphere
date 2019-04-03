@@ -1,14 +1,15 @@
 #!/bin/python
 
 import argparse
+import sys
 
 from troposphere import Ref, Template, Tags, Join, Output
 from troposphere.ec2 import InternetGateway, VPC, VPCGatewayAttachment, NetworkAcl, NetworkAclEntry, PortRange
 
 parser = argparse.ArgumentParser("Creating Cloudformation templates via Troposphere!")
-parser.add_argument('--cidr', help='VPC CidrBlock', type=str)
-parser.add_argument('--env', help='Environment', type=str)
-parser.add_argument('--resources', help='Resources to be created', nargs='+', type=str.lower)
+parser.add_argument('--cidr', help='VPC CidrBlock', type=str, required=True)
+parser.add_argument('--env', help='Environment', type=str, required=True)
+parser.add_argument('--resources', help='Resources to be created', nargs='+', type=str.lower, required=True)
 
 
 
@@ -29,21 +30,22 @@ flag = False
 
 for r in args.resources:
 	if r == "vpc" :
-        flag = True
-        vpc = t.add_resource(VPC("VPC", CidrBlock=args.cidr, InstanceTenancy="default", EnableDnsSupport=True, EnableDnsHostnames=True, Tags=Tags(Name=args.env+"-ServiceVPC", Environment=args.env)))
+	        flag = True
+        	vpc = t.add_resource(VPC("VPC", CidrBlock=args.cidr, InstanceTenancy="default", EnableDnsSupport=True, EnableDnsHostnames=True, Tags=Tags(Name=args.env+"-ServiceVPC", Environment=args.env)))
 	if r == "internetgateway":
-        flag = True
+        	flag = True
 		internetGateway = t.add_resource(InternetGateway("InternetGateway", Tags=Tags(Environment=args.env, Name=args.env+"-InternetGateway")))
 		gatewayAttachment = t.add_resource(VPCGatewayAttachment("VpcGatewayAttachment", InternetGatewayId=Ref(internetGateway), VpcId=Ref(vpc)))
 
 	if r == "networkacl":
-        flag = True
+        	flag = True
 		networkAcl = t.add_resource(NetworkAcl("VpcNetworkAcl", VpcId=Ref(vpc), Tags=Tags(Environment=args.env,Name=args.env+"-NetworkAcl")))
 		t.add_resource(NetworkAclEntry("VpcNetworkAclInboundRule", CidrBlock="0.0.0.0/0", Egress=False, NetworkAclId=Ref(networkAcl), PortRange=PortRange(To='443', From='443'), Protocol="6", RuleAction="allow", RuleNumber=100))
 		t.add_resource(NetworkAclEntry("VpcNetworkAclOutboundRule", CidrBlock="0.0.0.0/0", Egress=True, NetworkAclId=Ref(networkAcl), Protocol="6", RuleAction="allow", RuleNumber=200))
 
-if !flag:
+if not flag:
     print "Resource not supported"
+    sys.exit()
 
 t.add_output(
     [Output('InternetGateway',
@@ -51,4 +53,6 @@ t.add_output(
     Output('VPCID',
     	Value=Ref(vpc))])
 
-print(t.to_json())
+saveFile = open('template_'+args.env+'.json', 'w')
+saveFile.write(t.to_json())
+saveFile.close()
