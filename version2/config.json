@@ -1,0 +1,70 @@
+{
+	"desc": "Service VPC",
+	"env": "Production",
+	"stackname": "Production-VPC",
+	"resources": {
+		"VPC": {
+			"CidrBlock": "10.0.0.0/16",
+			"InstanceTenancy": "default",
+			"EnableDnsSupport": "True",
+			"EnableDnsHostnames": "True",
+			"Tags": [{
+
+					"Key": "Name",
+					"Value": "Production-ServiceVPC"
+				},
+				{
+					"Key": "Environment",
+					"Value": "Production"
+				}
+			]
+		},
+		"InternetGateway": {
+			"Tags": [{
+
+					"Key": "Name",
+					"Value": "Production-InternetGateway"
+				},
+				{
+					"Key": "Environment",
+					"Value": "Production"
+				}
+			]
+		},
+		"NetworkAcl": {
+			"Tags": [{
+				"Key": "Environment",
+				"Value": "Production"
+			},
+			{
+				"Key": "Name",
+				"Value": "Production-NetworkAcl"
+			}]
+		},
+		"NetworkAclEntry": [{
+			"VpcNetworkAclInboundRule": {
+				"CidrBlock": "0.0.0.0/0",
+				"Egress": "false",
+				"PortRange": {
+					"From": "443",
+					"To": "443"
+				},
+				"Protocol": "6",
+				"RuleAction": "allow",
+				"RuleNumber": 100
+			}
+		}, {
+			"VpcNetworkAclOutboundRule": {
+				"CidrBlock": "0.0.0.0/0",
+				"Egress": "true",
+				"Protocol": "6",
+				"RuleAction": "allow",
+				"RuleNumber": 200
+			}
+		}]
+	},
+	"outputs": [
+		"InternetGateway",
+		"VPC"
+	]
+}
